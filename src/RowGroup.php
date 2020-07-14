@@ -70,7 +70,7 @@ class RowGroup
             // See if there are any values in the old request
             $name = $this->name;
             $requestVals = old($name);
-            $requestGroupCloneCount = count($requestVals);
+            $requestGroupCloneCount = is_countable($requestVals) ? count($requestVals) : 0;
 
             // Decide if we need to loop over multiple times
             $rowGroupValueCounts = $formBuilder->getRowGroupValueCount($this->name);
