@@ -135,7 +135,8 @@ trait MarkerUpper
      */
     public static function inlineFieldError($errors, $fieldName, $fieldMap)
     {
-        if (count($errors) == 0) {
+        $hasErrors = is_countable($errors) ? count($errors) > 0 : false;
+        if (! $hasErrors) {
             return false;
         }
 
