@@ -52,6 +52,12 @@ class Column
 
     public $prefix;
 
+    public $onlyAvailableForBrands;
+
+    public $onlyAvailableForCurricula;
+
+    public $onlyAvailableForRoles;
+
     public $errors;
 
     public $fieldNameWithBrackets;
@@ -75,7 +81,7 @@ class Column
 
     /** @var array Values for option-table */
     public $columnHeadings = [];
-    
+
     /** @var array of HTML data attributes keyed by name (without "data-" prefix) */
     public $dataAttributes = [];
 
@@ -123,6 +129,9 @@ class Column
         $this->classes = $column_schema['classes'] ?? null;
         $this->disabled = $column_schema['disabled'] ?? null;
         $this->helptext = $column_schema['helptext'] ?? null;
+        $this->onlyAvailableForBrands = $column_schema['onlyAvailableForBrands'] ?? null;
+        $this->onlyAvailableForCurricula = $column_schema['onlyAvailableForCurricula'] ?? null;
+        $this->onlyAvailableForRoles = $column_schema['onlyAvailableForRoles'] ?? null;
         $this->helptextIfPreviouslySaved = $column_schema['helptextIfPreviouslySaved'] ?? null;
         $this->row_name = $column_schema['row_name'];
         $this->errors = $column_schema['errors'] ?? null;
@@ -409,7 +418,7 @@ class Column
 
                 return Form::bsPassword($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
                 break;
-                
+
             case "radios-readonly":  /* Render text into the form and add a hidden field */
             case "select-readonly":  /* Render text into the form and add a hidden field */
 
@@ -543,6 +552,33 @@ class Column
         return $output;
     }
 
+    /**
+     * @return bool
+     */
+    private function shouldRender()
+    {
+        if (! empty($this->onlyAvailableForBrands)) {
+            return in_array(current_brand(), $this->onlyAvailableForBrands);
+        }
+
+        if (! empty($this->onlyAvailableForCurricula)) {
+            return in_array(
+                optional(auth()->user())->activeCurriculumOfBrand()->curriculumType->slug ?? null,
+                $this->onlyAvailableForCurricula
+            );
+        }
+
+        if (! empty($this->onlyAvailableForRoles)) {
+            $authUser = auth()->user();
+            if (! $authUser) {
+                return false;
+            }
+
+            return $authUser->role($this->onlyAvailableForRoles);
+        }
+
+        return true;
+    }
 
     /**
      * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
@@ -553,6 +589,10 @@ class Column
      */
     public function markup(FormBuilder $formBuilder, $totalCols, $group_index): MarkUp
     {
+        if (! $this->shouldRender()) {
+            return new MarkUp('');
+        }
+
         $this->classBundle = CSSClassFactory::colClassBundle($totalCols);
         $this->classBundle->add($this->classes);
 
