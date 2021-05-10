@@ -2,15 +2,12 @@
 
 namespace Nomensa\FormBuilder;
 
+use Auth;
+use Carbon\Carbon;
+use CSSClassFactory;
 use Field;
 use Form;
 use Html;
-use Auth;
-
-use Carbon\Carbon;
-
-use CSSClassFactory;
-
 use Nomensa\FormBuilder\Exceptions\InvalidSchemaException;
 
 class Column
@@ -24,6 +21,8 @@ class Column
     public $field = '';
 
     public $label = '';
+
+    public $label_compute_optional_text = true;
 
     public $type = 'text';
 
@@ -73,7 +72,7 @@ class Column
     /** @var array */
     public $classes;
 
-    /** @var \Nomensa\FormBuilder\ClassBundle */
+    /** @var ClassBundle */
     public $classBundle;
 
     /** @var array Values in a select box */
@@ -92,23 +91,24 @@ class Column
      * @param array $column_schema
      * @param bool $cloneable
      *
-     * @throws \Nomensa\FormBuilder\Exceptions\InvalidSchemaException
+     * @throws InvalidSchemaException
      */
     public function __construct(array $column_schema, bool $cloneable)
     {
-        if (isSet($column_schema['field'])) {
+        if (isset($column_schema['field'])) {
             $this->field = $column_schema['field'];
         } else {
             throw new InvalidSchemaException('Columns must have a "field" value');
         }
 
-        if (isSet($column_schema['label'])) {
+        if (isset($column_schema['label'])) {
             $this->label = $column_schema['label'];
+            $this->label_compute_optional_text = $column_schema['label_compute_optional_text'] ?? true;
         } else {
             throw new InvalidSchemaException('Columns must have a "label" value');
         }
 
-        if (isSet($column_schema['type'])) {
+        if (isset($column_schema['type'])) {
             $this->type = $column_schema['type'];
         } else {
             throw new InvalidSchemaException('Columns must have a "type" value');
@@ -150,12 +150,12 @@ class Column
         $this->id = MarkerUpper::HTMLIDFriendly($this->fieldName);
 
 
-        if (!isSet($column_schema['options'])) {
+        if (! isset($column_schema['options'])) {
             // Do nothing
 
         } else {
             if (is_array($column_schema['options'])) {
-                if (!$this->hasStringKeys($column_schema['options'])) {
+                if (! $this->hasStringKeys($column_schema['options'])) {
                     $column_schema['options'] = $this->slugKeyArray($column_schema['options'], ($this->type == 'radios'));
                 }
                 $this->options = $column_schema['options'];
@@ -184,7 +184,7 @@ class Column
             array_shift($array);
         }
         $associativeArray = [];
-        foreach ($array as $item) {
+        foreach($array as $item) {
             if (strtolower($item) == 'please select') {
                 $associativeArray[""] = $item;
             } else {
@@ -198,9 +198,9 @@ class Column
     /**
      * Returns an array containing only the column parameters required by LaravelCollective Form/Field
      *
+     * @return array
      * @var $withLabel
      *
-     * @return array
      */
     private function asFormArray($withLabel = false)
     {
@@ -214,7 +214,7 @@ class Column
             $simpleColumn['label'] = $this->label;
         }
 
-        foreach ($this->dataAttributes as $key => $value) {
+        foreach($this->dataAttributes as $key => $value) {
             $dataAttributeKey = 'data-' . $key;
             $simpleColumn[$dataAttributeKey] = $value;
         }
@@ -226,7 +226,7 @@ class Column
 
 
     /**
-     * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
+     * @param FormBuilder $formBuilder
      *
      * @return string
      */
@@ -257,7 +257,7 @@ class Column
 
                 $attributes = $this->asFormArray(Column::WITH_LABEL);
                 $origID = $attributes['id'];
-                foreach ($this->options as $key => $option) {
+                foreach($this->options as $key => $option) {
                     $attributes['label'] = $option;
                     $attributes['id'] = $origID . '_' . $key;
                     $output .= Field::checkbox($this->fieldNameWithBrackets . '[]', $key, in_array($key, $values), $attributes);
@@ -295,13 +295,13 @@ class Column
 
                 // If this select is a multi-select, we need to add empty square brackets on the
                 // end to make sure all options are passed through to the request.
-                if (isSet($attributes['multiple'])) {
+                if (isset($attributes['multiple'])) {
                     $fieldName .= '[]';
                 }
 
                 // If the value can be decoded to an array of values, do it.
                 $values = json_decode($this->value);
-                if (!is_array($values)) {
+                if (! is_array($values)) {
                     $values = $this->value;
                 }
 
@@ -323,7 +323,7 @@ class Column
                 $output .= '<tr>';
                 $output .= '<th></th>';
 
-                foreach ($headers as $header => $value) {
+                foreach($headers as $header => $value) {
                     $output .= "<th>$value</th>";
                 }
 
@@ -331,17 +331,17 @@ class Column
                 $output .= '</thead>';
                 $output .= '<tbody>';
 
-                foreach ($this->options as $value => $cells) {
+                foreach($this->options as $value => $cells) {
 
                     $selected = $this->value == $value ? true : false;
 
                     $output .= '<tr>';
 
-                    $output .= "<td>" . Form::radio($this->fieldNameWithBrackets, $value, $selected, ['id' => $this->fieldNameWithBrackets.'_'.$value]) . "</td>";
+                    $output .= "<td>" . Form::radio($this->fieldNameWithBrackets, $value, $selected, ['id' => $this->fieldNameWithBrackets . '_' . $value]) . "</td>";
 
-                    foreach ($cells as $cell) {
-                        $output .= "<td>".Form::label($this->fieldNameWithBrackets.'_'.$value,$cell)."</td>";
-                    };
+                    foreach($cells as $cell) {
+                        $output .= "<td>" . Form::label($this->fieldNameWithBrackets . '_' . $value, $cell) . "</td>";
+                    }
 
                     $output .= '</tr>';
                 }
@@ -389,7 +389,7 @@ class Column
 
             case "date-readonly":  /* Render text into the form and add a hidden field */
 
-                if (!empty($this->value)) {
+                if (! empty($this->value)) {
 
                     $output .= '<div class="' . $this->classBundle . '">';
                     $output .= '<div class="section-readonly">';
@@ -422,7 +422,7 @@ class Column
             case "radios-readonly":  /* Render text into the form and add a hidden field */
             case "select-readonly":  /* Render text into the form and add a hidden field */
 
-                if (!empty($this->value)) {
+                if (! empty($this->value)) {
                     $output .= '<div class="' . $this->classBundle . '">';
                     $output .= '<div class="section-readonly">';
 
@@ -439,7 +439,7 @@ class Column
                         $output .= $this->readonlyMultipleValues($attributes['id'], $values);
                     } else {
 
-                        if (isSet($this->options[$this->value])) {
+                        if (isset($this->options[$this->value])) {
                             $output .= MarkerUpper::wrapInTag($this->options[$this->value], 'p');
                         } else {
                             $output .= MarkerUpper::wrapInTag($this->value, 'p');
@@ -457,7 +457,7 @@ class Column
             case "number-readonly":
             case "textarea-readonly":  /* Render text into the form and add a hidden field */
 
-                if (!empty($this->value) || $this->value === 0) {
+                if (! empty($this->value) || $this->value === 0) {
                     $output .= '<div class="' . $this->classBundle . '">';
                     $output .= '<div class="section-readonly">';
                     $output .= MarkerUpper::wrapInTag($this->label, "h4");
@@ -481,7 +481,7 @@ class Column
 
                 $output .= '<tr>';
 
-                foreach ($headers as $header => $value) {
+                foreach($headers as $header => $value) {
                     $output .= "<th>$value</th>";
                 }
 
@@ -489,15 +489,15 @@ class Column
                 $output .= '</thead>';
                 $output .= '<tbody>';
 
-                foreach ($this->options as $value => $cells) {
+                foreach($this->options as $value => $cells) {
 
                     // only display the selected row
                     if ($this->value == $value) {
                         $output .= '<tr>';
 
-                        foreach ($cells as $cell) {
+                        foreach($cells as $cell) {
                             $output .= "<td>" . $cell . "</td>";
-                        };
+                        }
 
                         $output .= '</tr>';
                     }
@@ -537,10 +537,10 @@ class Column
      *
      * @return string
      */
-    private function readonlyMultipleValues($origID, array $values) : string
+    private function readonlyMultipleValues($origID, array $values): string
     {
         $output = '<ul id="' . $origID . '_values">';
-        foreach ($values as $i => $value) {
+        foreach($values as $i => $value) {
 
             // TODO: This hidden field is legacy support and should be able to be removed soon
             $output .= Field::hidden($this->fieldNameWithBrackets . '[]', $value);
@@ -581,11 +581,11 @@ class Column
     }
 
     /**
-     * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
+     * @param FormBuilder $formBuilder
      * @param int $totalCols
      * @param null|int $group_index
      *
-     * @return \Nomensa\FormBuilder\MarkUp
+     * @return MarkUp
      */
     public function markup(FormBuilder $formBuilder, $totalCols, $group_index): MarkUp
     {
@@ -604,7 +604,7 @@ class Column
 
         $this->value = $formBuilder->getFieldValue($this->row_name, $group_index, $this->field);
 
-        if ($this->value && !empty($this->helptextIfPreviouslySaved)) {
+        if ($this->value && ! empty($this->helptextIfPreviouslySaved)) {
             $this->helptext = $this->helptextIfPreviouslySaved;
         }
 
@@ -650,11 +650,13 @@ class Column
         }
 
 
-        $optional = $formBuilder->ruleExists($this->fieldName, 'nullable') ? '<span class="optional"> ' . __('validation.optional_field') . '</span>' : null;
+        $optional = $this->label_compute_optional_text
+            ? ($formBuilder->ruleExists($this->fieldName, 'nullable') ? '<span class="optional"> ' . __('validation.optional_field') . '</span>' : null)
+            : null;
 
         $inlineErrors = $formBuilder->getInlineFieldError($this->fieldName);
 
-        if (!empty($inlineErrors)) {
+        if (! empty($inlineErrors)) {
             $this->classBundle->add("errors");
         }
 
@@ -695,17 +697,17 @@ class Column
                 $output .= $inlineErrors;
             }
 
-            if (!empty($this->helptext)) {
+            if (! empty($this->helptext)) {
                 $output .= '<div class="help_text">' . $this->helptext . '</div>';
             }
 
             $output .= $columnHTML;
 
-            if (!empty($this->suffix)) {
+            if (! empty($this->suffix)) {
                 $output .= MarkerUpper::wrapInTag($this->suffix, 'div');
             }
 
-            if (!empty($this->anchor)) {
+            if (! empty($this->anchor)) {
                 $a = explode("-", $this->anchor);
                 $output .= "<span class=\"help\"><a href=\"#" . $a[0] . "\">" . $a[1] . "</a></span>";
             }
@@ -731,14 +733,14 @@ class Column
 
 
     /**
-     * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
+     * @param FormBuilder $formBuilder
      *
      * @return string Defaults to 'editable'
      */
     private function getState(FormBuilder $formBuilder)
     {
         $key = $formBuilder->getStateKey();
-        if (isSet($this->states[$key])) {
+        if (isset($this->states[$key])) {
             return $this->states[$key];
         }
         return 'editable';
@@ -761,7 +763,7 @@ class Column
                 ->where('field_name', $this->field)
                 ->max('value');
 
-            return (int)$maxVal + 1;
+            return (int) $maxVal + 1;
         }
 
         return $this->default_value;
