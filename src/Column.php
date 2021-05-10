@@ -2,6 +2,8 @@
 
 namespace Nomensa\FormBuilder;
 
+use Auth;
+use Carbon\Carbon;
 use CSSClassFactory;
 use Field;
 use Form;
@@ -49,6 +51,12 @@ class Column
 
     public $prefix;
 
+    public $onlyAvailableForBrands;
+
+    public $onlyAvailableForCurricula;
+
+    public $onlyAvailableForRoles;
+
     public $errors;
 
     public $fieldNameWithBrackets;
@@ -64,7 +72,7 @@ class Column
     /** @var array */
     public $classes;
 
-    /** @var \Nomensa\FormBuilder\ClassBundle */
+    /** @var ClassBundle */
     public $classBundle;
 
     /** @var array Values in a select box */
@@ -83,7 +91,7 @@ class Column
      * @param array $column_schema
      * @param bool $cloneable
      *
-     * @throws \Nomensa\FormBuilder\Exceptions\InvalidSchemaException
+     * @throws InvalidSchemaException
      */
     public function __construct(array $column_schema, bool $cloneable)
     {
@@ -121,6 +129,9 @@ class Column
         $this->classes = $column_schema['classes'] ?? null;
         $this->disabled = $column_schema['disabled'] ?? null;
         $this->helptext = $column_schema['helptext'] ?? null;
+        $this->onlyAvailableForBrands = $column_schema['onlyAvailableForBrands'] ?? null;
+        $this->onlyAvailableForCurricula = $column_schema['onlyAvailableForCurricula'] ?? null;
+        $this->onlyAvailableForRoles = $column_schema['onlyAvailableForRoles'] ?? null;
         $this->helptextIfPreviouslySaved = $column_schema['helptextIfPreviouslySaved'] ?? null;
         $this->row_name = $column_schema['row_name'];
         $this->errors = $column_schema['errors'] ?? null;
@@ -215,7 +226,7 @@ class Column
 
 
     /**
-     * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
+     * @param FormBuilder $formBuilder
      *
      * @return string
      */
@@ -330,7 +341,7 @@ class Column
 
                     foreach($cells as $cell) {
                         $output .= "<td>" . Form::label($this->fieldNameWithBrackets . '_' . $value, $cell) . "</td>";
-                    };
+                    }
 
                     $output .= '</tr>';
                 }
@@ -486,7 +497,7 @@ class Column
 
                         foreach($cells as $cell) {
                             $output .= "<td>" . $cell . "</td>";
-                        };
+                        }
 
                         $output .= '</tr>';
                     }
@@ -541,16 +552,47 @@ class Column
         return $output;
     }
 
+    /**
+     * @return bool
+     */
+    private function shouldRender()
+    {
+        if (! empty($this->onlyAvailableForBrands)) {
+            return in_array(current_brand(), $this->onlyAvailableForBrands);
+        }
+
+        if (! empty($this->onlyAvailableForCurricula)) {
+            return in_array(
+                optional(auth()->user())->activeCurriculumOfBrand()->curriculumType->slug ?? null,
+                $this->onlyAvailableForCurricula
+            );
+        }
+
+        if (! empty($this->onlyAvailableForRoles)) {
+            $authUser = auth()->user();
+            if (! $authUser) {
+                return false;
+            }
+
+            return $authUser->role($this->onlyAvailableForRoles);
+        }
+
+        return true;
+    }
 
     /**
-     * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
+     * @param FormBuilder $formBuilder
      * @param int $totalCols
      * @param null|int $group_index
      *
-     * @return \Nomensa\FormBuilder\MarkUp
+     * @return MarkUp
      */
     public function markup(FormBuilder $formBuilder, $totalCols, $group_index): MarkUp
     {
+        if (! $this->shouldRender()) {
+            return new MarkUp('');
+        }
+
         $this->classBundle = CSSClassFactory::colClassBundle($totalCols);
         $this->classBundle->add($this->classes);
 
@@ -591,8 +633,8 @@ class Column
 
         $this->stateSpecificType = $this->type;
 
-        if ($state == 'readonly_for_owner' && $formBuilder->owner->id == auth()->user()->id ||
-            $state == 'editable_for_owner' && $formBuilder->owner->id != auth()->user()->id ||
+        if ($state == 'readonly_for_owner' && $formBuilder->owner->id == Auth::user()->id ||
+            $state == 'editable_for_owner' && $formBuilder->owner->id != Auth::user()->id ||
             $state != 'hidden' && $formBuilder->isDisplayMode('reading') ||
             $state == 'readonly') {
             $state = 'readonly';
@@ -606,6 +648,7 @@ class Column
         if ($state == 'ignore') {
             $this->stateSpecificType = 'ignore';
         }
+
 
         $optional = $this->label_compute_optional_text
             ? ($formBuilder->ruleExists($this->fieldName, 'nullable') ? '<span class="optional"> ' . __('validation.optional_field') . '</span>' : null)
@@ -690,7 +733,7 @@ class Column
 
 
     /**
-     * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
+     * @param FormBuilder $formBuilder
      *
      * @return string Defaults to 'editable'
      */
@@ -711,7 +754,7 @@ class Column
     private function parseDefaultValue(FormBuilder $formBuilder)
     {
         if ($this->default_value === 'TODAY') {
-            return now();
+            return Carbon::now();
         }
 
         if ($this->default_value === 'INCREMENTS_FOR_USER') {
