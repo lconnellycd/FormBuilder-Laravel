@@ -24,6 +24,10 @@ class Row
     protected $description;
     protected $notes;
 
+    public $onlyAvailableForBrands;
+    public $onlyAvailableForCurricula;
+    public $onlyAvailableForRoles;
+
     /** @var array - A row contains many columns */
     public $columns = [];
 
@@ -45,6 +49,9 @@ class Row
         $this->viewing_instructions = $row_schema['viewing_instructions'] ?? '';
         $this->edit_view_description = $row_schema['edit_view_description'] ?? '';
         $this->description = $row_schema['description'] ?? '';
+        $this->onlyAvailableForBrands = $row_schema['onlyAvailableForBrands'] ?? '';
+        $this->onlyAvailableForCurricula = $row_schema['onlyAvailableForCurricula'] ?? '';
+        $this->onlyAvailableForRoles = $row_schema['onlyAvailableForRoles'] ?? '';
         $this->notes = $row_schema['notes'] ?? '';
         $this->columns = $row_schema['columns'] ?? null;
 
@@ -60,15 +67,46 @@ class Row
         }
     }
 
+    /**
+     * @return bool
+     */
+    private function shouldRender()
+    {
+        if (! empty($this->onlyAvailableForBrands)) {
+            return in_array(current_brand(), $this->onlyAvailableForBrands);
+        }
+
+        if (! empty($this->onlyAvailableForCurricula)) {
+            return in_array(
+                optional(auth()->user())->activeCurriculumOfBrand()->curriculumType->slug ?? null,
+                $this->onlyAvailableForCurricula
+            );
+        }
+
+        if (! empty($this->onlyAvailableForRoles)) {
+            $authUser = auth()->user();
+            if (! $authUser) {
+                return false;
+            }
+
+            return $authUser->role($this->onlyAvailableForRoles);
+        }
+
+        return true;
+    }
 
     /**
-     * @param \Nomensa\FormBuilder\FormBuilder $formBuilder
-     * @param null|int $group_index
-     *
+     * @param FormBuilder $formBuilder
+     * @param             $group_index
      * @return string
+     * @throws Exceptions\InvalidDisplayModeException
      */
     public function markup(FormBuilder $formBuilder, $group_index) : string
     {
+        if (! $this->shouldRender()) {
+            return '';
+        }
+
         $html = '';
         $colsMarkup = '';
         $rowHasVisibleContent = false;
