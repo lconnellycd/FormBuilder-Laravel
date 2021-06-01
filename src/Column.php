@@ -628,7 +628,7 @@ class Column
         if (preg_match('/^editable_if_true_else_readonly:(.*)$/', $state, $matches)) {
             $keyName = $matches[1];
 
-            $state = ($formBuilder->viewData[$keyName] == true) ? 'editable' : 'readonly';
+            $state = ($formBuilder->viewData[$keyName] ?? false) == true ?  'editable' : 'readonly';
         }
 
         $this->stateSpecificType = $this->type;
