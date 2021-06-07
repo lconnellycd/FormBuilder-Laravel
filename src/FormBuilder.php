@@ -2,15 +2,16 @@
 
 namespace Nomensa\FormBuilder;
 
-use App\User;
 use App\EntryFormInstance;
 use App\FormSubmission;
+use App\User;
 use Illuminate\Support\MessageBag;
-
+use Illuminate\Support\Traits\Macroable;
 use Nomensa\FormBuilder\Exceptions\InvalidDisplayModeException;
 
 class FormBuilder
 {
+    use Macroable;
 
     const VALID_DISPLAY_MODES = [
         'creating',
