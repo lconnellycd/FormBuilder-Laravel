@@ -633,8 +633,8 @@ class Column
 
         $this->stateSpecificType = $this->type;
 
-        if ($state == 'readonly_for_owner' && $formBuilder->owner->id == Auth::user()->id ||
-            $state == 'editable_for_owner' && $formBuilder->owner->id != Auth::user()->id ||
+        if ($state == 'readonly_for_owner' && $formBuilder->owner->id == (Auth::user()->id ?? null) ||
+            $state == 'editable_for_owner' && $formBuilder->owner->id != (Auth::user()->id ?? null) ||
             $state != 'hidden' && $formBuilder->isDisplayMode('reading') ||
             $state == 'readonly') {
             $state = 'readonly';
