@@ -55,13 +55,13 @@ class Row
         $this->notes = $row_schema['notes'] ?? '';
         $this->columns = $row_schema['columns'] ?? null;
 
-        if (isSet($this->columns)) {
+        if (isset($this->columns)) {
 
             foreach ($this->columns as &$column) {
 
                 $column['row_name'] = $row_schema['row_name'];
 
-                $column = new Column($column,$this->cloneable);
+                $column = new Column($column, $this->cloneable);
 
             }
         }
@@ -72,20 +72,20 @@ class Row
      */
     private function shouldRender()
     {
-        if (! empty($this->onlyAvailableForBrands)) {
+        if (!empty($this->onlyAvailableForBrands)) {
             return in_array(current_brand(), $this->onlyAvailableForBrands);
         }
 
-        if (! empty($this->onlyAvailableForCurricula)) {
+        if (!empty($this->onlyAvailableForCurricula)) {
             return in_array(
                 optional(auth()->user())->activeCurriculumOfBrand()->curriculumType->slug ?? null,
                 $this->onlyAvailableForCurricula
             );
         }
 
-        if (! empty($this->onlyAvailableForRoles)) {
+        if (!empty($this->onlyAvailableForRoles)) {
             $authUser = auth()->user();
-            if (! $authUser) {
+            if (!$authUser) {
                 return false;
             }
 
@@ -101,9 +101,9 @@ class Row
      * @return string
      * @throws Exceptions\InvalidDisplayModeException
      */
-    public function markup(FormBuilder $formBuilder, $group_index) : string
+    public function markup(FormBuilder $formBuilder, $group_index): string
     {
-        if (! $this->shouldRender()) {
+        if (!$this->shouldRender()) {
             return '';
         }
 
@@ -111,10 +111,10 @@ class Row
         $colsMarkup = '';
         $rowHasVisibleContent = false;
 
-        if (isSet($this->columns)) {
+        if (isset($this->columns)) {
             $colCount = count($this->columns);
             foreach ($this->columns as $column) {
-                $colMarkup = $column->markup($formBuilder,$colCount,$group_index);
+                $colMarkup = $column->markup($formBuilder, $colCount, $group_index);
                 $colsMarkup .= $colMarkup->html;
 
                 if ($colMarkup->hasVisibleContent) {
@@ -151,7 +151,7 @@ class Row
         }
 
         if ($this->notes && $rowHasVisibleContent) {
-            $html .= MarkerUpper::wrapInTag($this->notes,'div');
+            $html .= MarkerUpper::wrapInTag($this->notes, 'div');
         }
 
         return $html;
@@ -164,7 +164,7 @@ class Row
      *
      * @return string
      */
-    private function wrapInRowTags($content, $attributes=[]) : string
+    private function wrapInRowTags($content, $attributes = []): string
     {
         $classBundle = CSSClassFactory::rowClassBundle();
         if (!empty($attributes['class'])) {
@@ -172,7 +172,7 @@ class Row
         }
         $attributes['class'] = $classBundle->__toString();
 
-        return MarkerUpper::wrapInTag($content,'div',$attributes);
+        return MarkerUpper::wrapInTag($content, 'div', $attributes);
     }
 
 
