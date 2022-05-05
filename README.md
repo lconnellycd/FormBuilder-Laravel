@@ -215,7 +215,7 @@ class MyGreatFormController extends Controller
         $errors = new MessageBag();
         
         $arrSession = session()->all();
-        if (isSet($arrSession['errors'])) {
+        if (isset($arrSession['errors'])) {
             $errors = $arrSession['errors']->getBag('default');
         }
         $formBuilder->errors = $errors;
