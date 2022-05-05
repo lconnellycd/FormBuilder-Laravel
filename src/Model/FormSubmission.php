@@ -95,9 +95,9 @@ class FormSubmission extends Model
             if ($row->cloneable) {
 
                 $group_index = 0;
-                while (isSet($inputs[$row_name][$group_index])) {
+                while (isset($inputs[$row_name][$group_index])) {
                     foreach ($row->fields as $field_name) {
-                        if (isSet($inputs[$row_name][$group_index][$field_name])) {
+                        if (isset($inputs[$row_name][$group_index][$field_name])) {
                             $value = $inputs[$row_name][$group_index][$field_name];
 
                             $this->saveOrUpdateField($i, $row_name, $group_index, $field_name, $value);
@@ -121,7 +121,7 @@ class FormSubmission extends Model
             }
         }
 
-        if (isSet($inputs['cloneableRowGroupsCounts'])) {
+        if (isset($inputs['cloneableRowGroupsCounts'])) {
 
             foreach ($inputs['cloneableRowGroupsCounts'] as $row_name => $count) {
 
