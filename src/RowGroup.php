@@ -39,7 +39,7 @@ class RowGroup
         // Iterate over array of rows as arrays, converting them to instances of Row
         foreach ($this->rows as $key => &$row) {
 
-            if (isSet($row['cloneable_rowgroup']) && $row['cloneable_rowgroup'] == true) {
+            if (isset($row['cloneable_rowgroup']) && $row['cloneable_rowgroup'] == true) {
 
                 $row = new RowGroup($row['rows'], $row['rowgroup_name'], self::CLONEABLE);
 
@@ -61,7 +61,7 @@ class RowGroup
      *
      * @return string HTML markup
      */
-    public function markup(FormBuilder $formBuilder) : string
+    public function markup(FormBuilder $formBuilder): string
     {
         $html = '';
 
@@ -80,7 +80,7 @@ class RowGroup
 
             // We ALWAYS want at least 1 copy of a cloneable rowGroup, otherwise editing
             // a form attempting to add a group for the first time is impossible.
-            $iLimit = max(1,$requestGroupCloneCount,$rowGroupValueCounts);
+            $iLimit = max(1, $requestGroupCloneCount, $rowGroupValueCounts);
 
             for ($group_index = 0; $group_index < $iLimit; $group_index++) {
                 $groupHTML = $this->markupClone($formBuilder, $group_index);
@@ -107,7 +107,7 @@ class RowGroup
      *
      * @return string HTML markup
      */
-    private function markupClone(FormBuilder $formBuilder, $group_index = null) : string
+    private function markupClone(FormBuilder $formBuilder, $group_index = null): string
     {
         $html = '';
         foreach ($this->rows as $row) {
@@ -129,7 +129,7 @@ class RowGroup
                 $attributes['class'] .= ' clone-' . $group_index;
                 unset($attributes['id']);
             }
-            $html = MarkerUpper::wrapInTag($html,'div',$attributes);
+            $html = MarkerUpper::wrapInTag($html, 'div', $attributes);
 
 
         }
