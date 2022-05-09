@@ -10,7 +10,7 @@ namespace Nomensa\FormBuilder;
 trait FieldMapping
 {
 
-    /** @var array - Array of Fields and  */
+    /** @var array - Array of Fields and */
     private $fields = [];
 
     /** @var array - Key-pair values of field IDs to labels */
@@ -22,7 +22,7 @@ trait FieldMapping
      *
      * @return array
      */
-    public function getFieldMap() : array
+    public function getFieldMap(): array
     {
         if (!$this->fieldMap) {
             $this->fieldMap = $this->mapFieldMapFromSchema();
@@ -34,7 +34,7 @@ trait FieldMapping
     /**
      * @return array
      */
-    private function mapFieldMapFromSchema() : array
+    private function mapFieldMapFromSchema(): array
     {
         $fields = [];
 
@@ -67,7 +67,7 @@ trait FieldMapping
      *
      * @return array
      */
-    public function getFields() : array
+    public function getFields(): array
     {
         if (!$this->fields) {
             $this->fields = $this->mapFieldsFromSchema();
@@ -81,7 +81,7 @@ trait FieldMapping
      *
      * @return array
      */
-    private function mapFieldsFromSchema() : array
+    private function mapFieldsFromSchema(): array
     {
         $fields = [];
 
@@ -108,13 +108,13 @@ trait FieldMapping
      *
      * @return array
      */
-    private function getRowsWithColumns(RowGroup $rowGroup) : array
+    private function getRowsWithColumns(RowGroup $rowGroup): array
     {
         $rowsWithColumns = [];
 
         foreach ($rowGroup->rows as $row) {
 
-            if(isset($row->columns)){
+            if (isset($row->columns)) {
                 $thisRowsWithColumns = $this->extractFieldsFromColumn($row->columns);
 
                 $rowsWithColumns = array_merge($rowsWithColumns, $thisRowsWithColumns);
@@ -141,7 +141,7 @@ trait FieldMapping
     {
         $fields = [];
 
-        foreach ($columns as $column){
+        foreach ($columns as $column) {
             $fields[$column->fieldName] = $column;
         }
 
@@ -156,7 +156,7 @@ trait FieldMapping
      *
      * @return array
      */
-    public function getStateRules($state_key) : array
+    public function getStateRules($state_key): array
     {
         $rules = [];
 
@@ -170,7 +170,7 @@ trait FieldMapping
             if ($field->cloneable) {
                 // Don't assume required for cloneable fields, developer should implement their own rules
 
-            } elseif (!isSet($field->states[$state_key]) || $field->states[$state_key] == 'editable') {
+            } elseif (!isset($field->states[$state_key]) || $field->states[$state_key] == 'editable') {
                 $rules[$key] = 'required';
             }
         }
@@ -188,7 +188,7 @@ trait FieldMapping
     {
         $textareas = [];
         foreach ($this->getFields() as $key => $field) {
-            if ((!isSet($field->states[$this->state_id]) || $field->states[$this->state_id] == 'editable') && $field->type =='textarea') {
+            if ((!isset($field->states[$this->state_id]) || $field->states[$this->state_id] == 'editable') && $field->type == 'textarea') {
 
                 $textareas[] = $key;
 

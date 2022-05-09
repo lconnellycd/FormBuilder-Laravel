@@ -8,6 +8,7 @@ use App\User;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\Traits\Macroable;
 use Nomensa\FormBuilder\Exceptions\InvalidDisplayModeException;
+use Nomensa\FormBuilder\Helpers\OutputHelper;
 
 class FormBuilder
 {
@@ -75,7 +76,7 @@ class FormBuilder
         $this->ruleGroups = $this->cascadeRuleGroups($options['rules']);
 
         // get optional map of state_ids to ruleGroups
-        $this->stateRuleGroups = isset($options['stateRuleGroups']) ? (array) $options['stateRuleGroups'] : null;
+        $this->stateRuleGroups = isset($options['stateRuleGroups']) ? (array)$options['stateRuleGroups'] : null;
     }
 
 
@@ -97,13 +98,13 @@ class FormBuilder
         foreach ($ruleGroupArray as $index => $ruleGroup) {
 
             // merge the previous values
-            $ruleGroup = array_merge( $prev, $ruleGroup );
+            $ruleGroup = array_merge($prev, $ruleGroup);
 
             // save the last result for our next loop
             $prev = $ruleGroup;
 
             // encode the values into an object
-            $ruleGroups[$index] =  json_decode(json_encode($ruleGroup), FALSE);
+            $ruleGroups[$index] = json_decode(json_encode($ruleGroup), FALSE);
 
         }
 
@@ -153,7 +154,7 @@ class FormBuilder
         $state_key = $this->getStateKey();
 
         // if state_id exists in stateRuleGroups then use that one
-        if(isset($this->stateRuleGroups[$state_key])){
+        if (isset($this->stateRuleGroups[$state_key])) {
             $ruleGroupKey = $this->stateRuleGroups[$state_key];
         }
 
@@ -194,7 +195,7 @@ class FormBuilder
 
         $ruleGroup = $this->getRuleGroup($ruleGroupKey);
 
-        if (isSet($ruleGroup[$fieldName])) {
+        if (isset($ruleGroup[$fieldName])) {
             return $ruleGroup[$fieldName];
         }
     }
@@ -209,8 +210,8 @@ class FormBuilder
      */
     public function getRuleGroup($key)
     {
-        
-        if (isSet($this->ruleGroups[$key])) {
+
+        if (isset($this->ruleGroups[$key])) {
             return (array)$this->ruleGroups[$key];
         }
         return [];
@@ -233,7 +234,7 @@ class FormBuilder
      *
      * @return int - Number of row_groups
      */
-    public function getRowGroupValueCount($row_name) : int
+    public function getRowGroupValueCount($row_name): int
     {
         // If there is no submission, we want 1 of everything
         if ($this->formSubmission === null) {
@@ -265,7 +266,7 @@ class FormBuilder
 
                     if ($row->cloneable) {
 
-                        if (!isSet($rows[$row->name])) {
+                        if (!isset($rows[$row->name])) {
                             $rows[$row->name] = (object)[
                                 'cloneable' => true,
                                 'fields' => []
@@ -280,7 +281,7 @@ class FormBuilder
 
                     } elseif (is_array($row->columns)) {
 
-                        if (!isSet($rows[$row->name])) {
+                        if (!isset($rows[$row->name])) {
                             $rows[$row->name] = (object)[
                                 'cloneable' => false,
                                 'fields' => []
@@ -288,7 +289,7 @@ class FormBuilder
                         }
 
                         foreach ($row->columns as $column) {
-                            if (isSet($column->states[$state])) {
+                            if (isset($column->states[$state])) {
                                 if (in_array($column->states[$state], ['editable', 'hidden'])) {
                                     $rows[$row->name]->fields[] = $column->field;
                                 }
@@ -317,7 +318,7 @@ class FormBuilder
                 foreach ($component->fieldMappings as $field_key => $label) {
                     list($group_key, $field_key) = explode('.', $field_key);
 
-                    if (!isSet($rows[$group_key])) {
+                    if (!isset($rows[$group_key])) {
                         $rows[$group_key] = (object)[
                             'cloneable' => false,
                             'fields' => []
@@ -359,7 +360,7 @@ class FormBuilder
      *
      * @return array
      */
-    public function getFieldOptions($row_name, $field_name) : array
+    public function getFieldOptions($row_name, $field_name): array
     {
         $field = $this->getField($row_name, $field_name);
         if ($field) {
@@ -396,7 +397,7 @@ class FormBuilder
      *
      * @return string
      */
-    public function getFieldHumanValue($row_name, $field_name, $value_key) : string
+    public function getFieldHumanValue($row_name, $field_name, $value_key): string
     {
         $options = $this->getFieldOptions($row_name, $field_name);
 
@@ -412,23 +413,23 @@ class FormBuilder
      *
      * @return string
      */
-    public static function findHumanValueIfAvailable(array $options, $key) : string
+    public static function findHumanValueIfAvailable(array $options, $key): string
     {
-        if (isSet($options[$key])) {
+        if (isset($options[$key])) {
             return $options[$key];
         }
 
         // Iterate over the options, seeing if they are actually optgroups with options inside
         foreach ($options as $option) {
             if (is_array($option)) {
-                if (isSet($option[$key])) {
+                if (isset($option[$key])) {
                     return $option[$key];
                 }
             }
         }
 
         // Give up, just return key
-        return $key;
+        return OutputHelper::output($key);
     }
 
 
@@ -436,8 +437,8 @@ class FormBuilder
     {
         if (!empty($this->errors->get($fieldName))) {
             return MarkerUpper::wrapInTag('', 'a', [
-              'name' => MarkerUpper::makeErrorAnchorName($fieldName),
-              'class' => 'error-anchor',
+                'name' => MarkerUpper::makeErrorAnchorName($fieldName),
+                'class' => 'error-anchor',
             ]);
         }
         return '';
@@ -485,7 +486,7 @@ class FormBuilder
      *
      * @throws InvalidDisplayModeException
      */
-    public function isDisplayMode($verbs) : bool
+    public function isDisplayMode($verbs): bool
     {
         if (is_string($verbs)) {
             return $this->isSingleDisplayMode($verbs);
@@ -501,7 +502,7 @@ class FormBuilder
     }
 
 
-    private function isSingleDisplayMode($verb) : bool
+    private function isSingleDisplayMode($verb): bool
     {
         if (!in_array($verb, self::VALID_DISPLAY_MODES)) {
             throw new InvalidDisplayModeException($verb . ' is not a valid displayMode.');
