@@ -235,12 +235,10 @@ class Column
             case "ignore":
                 // do not render this field at all
                 return '';
-                break;
 
             case "checkbox":
 
                 return Field::checkbox($this->fieldNameWithBrackets, $this->options, $this->value, $this->asFormArray(Column::WITH_LABEL));
-                break;
 
             case "checkboxes":
 
@@ -255,7 +253,7 @@ class Column
                 }
 
                 return $output;
-                break;
+
             case "checkboxes-readonly": /* Render text into the form and add hidden fields */
 
                 $attributes = $this->asFormArray(Column::WITH_LABEL);
@@ -276,7 +274,6 @@ class Column
                 $output .= '</div>' . PHP_EOL;
 
                 return $output;
-                break;
 
             case "select":
 
@@ -298,12 +295,10 @@ class Column
                 }
 
                 return Form::select($fieldName, $this->options, $values, $attributes);
-                break;
 
             case "radios":
 
                 return Form::{$this->type}($this->fieldNameWithBrackets, $this->options, $this->value, $this->asFormArray());
-                break;
 
             case "option-table":
                 // define table headers from first row
@@ -346,7 +341,6 @@ class Column
             case "file":
 
                 return Field::file($this->fieldNameWithBrackets, $this->asFormArray());
-                break;
 
             case "date":
 
@@ -377,7 +371,6 @@ class Column
 
                 // We create date as a text field (NOT date!) because we replace it with a date picker and don't want Chrome to be "helpful"
                 return Field::text($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
-                break;
 
             case "date-readonly":  /* Render text into the form and add a hidden field */
 
@@ -398,7 +391,6 @@ class Column
             case "password":
 
                 return Form::bsPassword($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
-                break;
 
             case "radios-readonly":  /* Render text into the form and add a hidden field */
             case "select-readonly":  /* Render text into the form and add a hidden field */
@@ -495,12 +487,14 @@ class Column
             case "search":
 
                 return Form::text($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
-                break;
+
+            case 'textarea':
+
+                return Field::{$this->type}($this->fieldNameWithBrackets, htmlspecialchars($this->value), $this->asFormArray());
 
             default:
 
                 return Field::{$this->type}($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
-                break;
         }
 
         return $output;
