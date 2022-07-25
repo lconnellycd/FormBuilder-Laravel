@@ -427,8 +427,8 @@ class Column
 
             case "text-readonly":  /* Render text into the form and add a hidden field */
             case "number-readonly":
-                $this->value = OutputHelper::output($this->value);
             case "textarea-readonly":  /* Render text into the form and add a hidden field */
+                $this->value = OutputHelper::output($this->value);
                 if (!empty($this->value) || $this->value === 0) {
                     $output .= '<div class="' . $this->classBundle . '">';
                     $output .= '<div class="section-readonly">';
