@@ -427,8 +427,10 @@ class Column
 
             case "text-readonly":  /* Render text into the form and add a hidden field */
             case "number-readonly":
-            case "textarea-readonly":  /* Render text into the form and add a hidden field */
                 $this->value = OutputHelper::output($this->value);
+            case "textarea-readonly":  /* Render text into the form and add a hidden field */
+                $this->value = $this->stripTagsTextarea();
+
                 if (!empty($this->value) || $this->value === 0) {
                     $output .= '<div class="' . $this->classBundle . '">';
                     $output .= '<div class="section-readonly">';
@@ -489,6 +491,7 @@ class Column
                 return Form::text($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
 
             case 'textarea':
+                $this->value = $this->stripTagsTextarea();
 
                 return Field::{$this->type}($this->fieldNameWithBrackets, htmlspecialchars($this->value), $this->asFormArray());
 
@@ -730,5 +733,26 @@ class Column
         }
 
         return $this->default_value;
+    }
+
+    /**
+     * @return string
+     */
+    protected function stripTagsTextarea(): string
+    {
+        return strip_tags($this->value, [
+            'p',
+            'strong',
+            'em',
+            'b',
+            'i',
+            'ol',
+            'ul',
+            'li',
+            'br',
+            'span',
+            'div',
+            'wbr'
+        ]);
     }
 }
