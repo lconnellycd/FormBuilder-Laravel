@@ -247,6 +247,7 @@ class FormSubmission extends Model
     ): FormSubmissionField {
         $formSubmissionField->weight = $weight;
         $formSubmissionField->row_name = $row_name;
+        $value = strip_tags($value);
 
         if ($group_index !== null) {
             $formSubmissionField->group_index = $group_index;
