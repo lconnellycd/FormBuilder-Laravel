@@ -33,7 +33,10 @@ class FormVersion extends Model
     private $formInstanceCount;
     private $formSubmissionCount;
 
-    protected $dates = ['created_at', 'updated_at'];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
 
     /**
      * @param EntryForm $entryForm
