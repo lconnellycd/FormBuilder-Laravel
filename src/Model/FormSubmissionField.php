@@ -17,12 +17,11 @@ class FormSubmissionField extends Model
      */
     protected $guarded = [];
 
-    protected $dates = [
-        'value_date',
-        'updated_at',
-        'created_at'
+    protected $casts = [
+        'value_date' => 'date',
+        'updated_at' => 'datetime',
+        'created_at' => 'datetime',
     ];
-
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

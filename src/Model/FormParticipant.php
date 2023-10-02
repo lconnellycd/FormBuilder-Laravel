@@ -19,12 +19,12 @@ class FormParticipant extends Model
      *
      * @var array
      */
-    protected $dates = [
-        'updated_at',
-        'created_at',
-        'date_rejected',
-        'date_signoff',
-        'last_email_sent_at'
+    protected $casts = [
+        'updated_at' => 'datetime',
+        'created_at' => 'datetime',
+        'date_rejected' => 'date',
+        'date_signoff' => 'date',
+        'last_email_sent_at' => 'datetime'
     ];
 
 
