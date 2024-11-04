@@ -13,6 +13,10 @@ class FormBuilderServiceProvider extends ServiceProvider {
 
     public function register(){
         $this->commands($this->commands);
+
+         if (! $this->app->providerIsLoaded(\Spatie\Html\HtmlServiceProvider::class)) {
+            $this->app->register(\Spatie\Html\HtmlServiceProvider::class);
+        }
     }
 
     public function boot()
