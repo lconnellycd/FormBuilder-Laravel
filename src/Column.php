@@ -238,7 +238,7 @@ class Column
 
             case "checkbox":
 
-                return Field::checkbox($this->fieldNameWithBrackets, $this->options, $this->value, $this->asFormArray(Column::WITH_LABEL));
+                return html()->checkbox($this->fieldNameWithBrackets, $this->options, $this->value, $this->asFormArray(Column::WITH_LABEL));
 
             case "checkboxes":
 
@@ -249,7 +249,7 @@ class Column
                 foreach ($this->options as $key => $option) {
                     $attributes['label'] = $option;
                     $attributes['id'] = $origID . '_' . $key;
-                    $output .= Field::checkbox($this->fieldNameWithBrackets . '[]', $key, in_array($key, $values), $attributes);
+                    $output .= html()->checkbox($this->fieldNameWithBrackets . '[]', $key, in_array($key, $values), $attributes);
                 }
 
                 return $output;
@@ -294,11 +294,15 @@ class Column
                     $values = $this->value;
                 }
 
-                return Form::select($fieldName, $this->options, $values, $attributes);
+                return html()->select($fieldName, $this->options, $values, $attributes);
 
             case "radios":
 
-                return Form::{$this->type}($this->fieldNameWithBrackets, $this->options, $this->value, $this->asFormArray());
+                if ($this->type === 'radios') {
+                  return html()->radio($this->fieldNameWithBrackets, $this->options, $this->value, $this->asFormArray());
+                }
+
+                return html()->{$this->type}($this->fieldNameWithBrackets, $this->options, $this->value, $this->asFormArray());
 
             case "option-table":
                 // define table headers from first row
@@ -324,10 +328,10 @@ class Column
 
                     $output .= '<tr>';
 
-                    $output .= "<td>" . Form::radio($this->fieldNameWithBrackets, $value, $selected, ['id' => $this->fieldNameWithBrackets . '_' . $value]) . "</td>";
+                    $output .= "<td>" . html()->radio($this->fieldNameWithBrackets, $value, $selected, ['id' => $this->fieldNameWithBrackets . '_' . $value]) . "</td>";
 
                     foreach ($cells as $cell) {
-                        $output .= "<td>" . Form::label($this->fieldNameWithBrackets . '_' . $value, OutputHelper::output($cell)) . "</td>";
+                        $output .= "<td>" . html()->label($this->fieldNameWithBrackets . '_' . $value, OutputHelper::output($cell)) . "</td>";
                     }
 
                     $output .= '</tr>';
@@ -340,7 +344,7 @@ class Column
 
             case "file":
 
-                return Field::file($this->fieldNameWithBrackets, $this->asFormArray());
+                return html()->file($this->fieldNameWithBrackets, $this->asFormArray());
 
             case "date":
 
@@ -370,7 +374,7 @@ class Column
                 }
 
                 // We create date as a text field (NOT date!) because we replace it with a date picker and don't want Chrome to be "helpful"
-                return Field::text($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
+                return html()->text($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
 
             case "date-readonly":  /* Render text into the form and add a hidden field */
 
@@ -382,7 +386,7 @@ class Column
                     $output .= MarkerUpper::wrapInTag($this->value->format('j F Y'), 'p');
                     $output .= '</div>' . PHP_EOL . '<!-- /.section-readonly -->' . PHP_EOL;
                     $output .= '</div>' . PHP_EOL;
-                    $output .= Field::hidden($this->fieldNameWithBrackets,
+                    $output .= html()->hidden($this->fieldNameWithBrackets,
                         $this->value->format('Y-m-d'), $this->asFormArray());
                 }
 
@@ -390,7 +394,7 @@ class Column
 
             case "password":
 
-                return Form::bsPassword($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
+                return html()->password($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
 
             case "radios-readonly":  /* Render text into the form and add a hidden field */
             case "select-readonly":  /* Render text into the form and add a hidden field */
@@ -421,7 +425,7 @@ class Column
 
                     $output .= '</div>' . PHP_EOL . '<!-- /.section-readonly -->' . PHP_EOL;
                     $output .= '</div>' . PHP_EOL;
-                    $output .= Field::hidden($this->fieldNameWithBrackets, $this->value, $attributes);
+                    $output .= html()->hidden($this->fieldNameWithBrackets, $this->value, $attributes);
                 }
                 break;
 
@@ -437,7 +441,7 @@ class Column
                     $output .= MarkerUpper::wrapInTag($this->label, "h4");
                     $output .= MarkerUpper::wrapInTag($this->value, 'div');
                     $output .= '</div>' . PHP_EOL . '<!-- /.section-readonly -->' . PHP_EOL;
-                    $output .= Field::hidden($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
+                    $output .= html()->hidden($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
                     $output .= '</div>' . PHP_EOL;
 
                 }
@@ -482,22 +486,22 @@ class Column
 
                 $output .= '</div>' . PHP_EOL . '<!-- /.section-readonly -->' . PHP_EOL;
                 $output .= '</div>' . PHP_EOL;
-                $output .= Field::hidden($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
+                $output .= html()->hidden($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
 
                 break;
 
             case "search":
 
-                return Form::text($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
+                return html()->text($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
 
             case 'textarea':
                 $this->value = $this->stripTagsTextarea();
 
-                return Field::{$this->type}($this->fieldNameWithBrackets, htmlspecialchars($this->value), $this->asFormArray());
+                return html()->{$this->type}($this->fieldNameWithBrackets, htmlspecialchars($this->value), $this->asFormArray());
 
             default:
 
-                return Field::{$this->type}($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
+                return html()->{$this->type}($this->fieldNameWithBrackets, $this->value, $this->asFormArray());
         }
 
         return $output;
@@ -516,7 +520,7 @@ class Column
         foreach ($values as $i => $value) {
 
             // TODO: This hidden field is legacy support and should be able to be removed soon
-            $output .= Field::hidden($this->fieldNameWithBrackets . '[]', OutputHelper::output($value));
+            $output .= html()->hidden($this->fieldNameWithBrackets . '[]', OutputHelper::output($value));
 
             $output .= '<li>' . FormBuilder::findHumanValueIfAvailable($this->options, $value) . '</li>';
         }
@@ -561,6 +565,7 @@ class Column
      */
     public function markup(FormBuilder $formBuilder, $totalCols, $group_index): MarkUp
     {
+        xdebug_break();
         if (!$this->shouldRender()) {
             return new MarkUp('');
         }
@@ -659,7 +664,7 @@ class Column
                 $output .= '<legend>' . $this->label . $optional . '</legend>';
             } else {
                 if ($this->type != 'checkbox') {
-                    $output .= HTML::decode(Form::label(str_replace('.', '_', $this->fieldName), $this->label . $optional));
+                    $output .= html()->label(str_replace('.', '_', $this->fieldName), $this->label . $optional);
                 }
             }
 
